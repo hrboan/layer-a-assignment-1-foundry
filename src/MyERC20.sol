@@ -21,7 +21,8 @@ contract MyERC20 { //MyERC20이라는 스마트컨트랙트 선언
 
 
     constructor() { //컨트랙트가 배포될 때 딱 한 번 실행되는 함수, 초기 설정용
-        totalSupply = 1000 * 10 ** decimals; //총 발행량 설정, decimals = 18이므로 소수점 곱하기, 1000 토큰이라는 뜻
+        totalSupply = 1000000 * 10 ** decimals; //총 발행량 설정, decimals = 18이므로 소수점 곱하기, 1000 토큰이라는 뜻
+        //+ 초기 발행량 수정
         _balances[msg.sender] = totalSupply; //msg.sender = 컨트랙트를 배포한 사람 주소, 배포자가 모든 토큰을 처음에 다 가져감
     }
 
@@ -31,6 +32,7 @@ contract MyERC20 { //MyERC20이라는 스마트컨트랙트 선언
     }
 
     function transfer(address to, uint256 amount) public returns (bool) { //토큰 보내는 함수
+        require(to != address(0), "ERC20: transfer to the zero address");
         require(_balances[msg.sender] >= amount, "not enough balance"); //돈 부족하면 실행 중단
 
         _balances[msg.sender] -= amount;
@@ -41,6 +43,9 @@ contract MyERC20 { //MyERC20이라는 스마트컨트랙트 선언
     }
 
     function approve(address spender, uint256 amount) public returns (bool) { //다른 사람이 내 토큰을 대신 쓸 수 있도록 허락
+        require(spender != address(0), "ERC20: approve to the zero address");
+        //+ 받는 주소가 0번 주소면 전송x
+
         _allowances[msg.sender][spender] = amount; //msg.sender=나, spender=받는 사람
 
         emit Approval(msg.sender, spender, amount); // <-이벤트 발생, 로그 기록
@@ -52,6 +57,8 @@ contract MyERC20 { //MyERC20이라는 스마트컨트랙트 선언
     }
 
     function transferFrom(address from, address to, uint256 amount) public returns (bool) { //승인 받은 사람이 대신 토큰을 보내는 함수
+        require(to != address(0), "ERC20: transfer to the zero address");
+        //+ 받는 주소가 0번 주소면 전송x
         require(_balances[from] >= amount, "not enough balance"); //잔액 체크, 실제 토큰이 있는지 확인
         require(_allowances[from][msg.sender] >= amount, "not allowed"); //승인 체크, 승인 받은 양 확인
 
